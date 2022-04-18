@@ -30,7 +30,6 @@ namespace MESWebAPI.Controllers
             _config = config;
             _memoryCache = iMemoryCache;
             _yieldRepository = new YieldRepository(_config["ConnectionStrings:BasisConnection"]);
-            //1=1
         }
 
         private MySqlConnection GetMysqlConnection(int productID, EnumList.EnvironmentList environment = EnumList.EnvironmentList.Release)
