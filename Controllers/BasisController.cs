@@ -11,29 +11,28 @@ using Microsoft.Extensions.Caching.Memory;
 using MESWebAPI.Repositories;
 using MESWebAPI.Tools;
 
+using MESWebAPI.Models;
+using Newtonsoft.Json;
+
 namespace MESWebAPI.Controllers
 {
-    #nullable disable
+#nullable disable
     [ApiController]
     //[Route("basis/[controller]")]
     [Route("[controller]")]
-    public class BasisController: ControllerBase
+    public class BasisController : MESControllerBase
     {
-        protected readonly ILogger<BasisController> _logger;
-        protected readonly IConfiguration _config;
-        protected readonly IMemoryCache _memoryCache;
-        protected BasisRepository _basisRepository;
+        // protected readonly ILogger<BasisController> _logger;
+        // protected readonly IConfiguration _config;
+        // protected readonly IMemoryCache _memoryCache;
+        // protected BasisRepository _basisRepository;
 
-        public BasisController(ILogger<BasisController> logger, IConfiguration config, IMemoryCache iMemoryCache)
+        public BasisController(ILogger<BasisController> logger, IConfiguration config, IMemoryCache iMemoryCache) : base(logger, config, iMemoryCache)
         {
-            _logger = logger;
-            _config = config;
-            _memoryCache =iMemoryCache;
-
             string dynamicConn = Environment.GetEnvironmentVariable("BasisConnection");
             if (!string.IsNullOrEmpty(dynamicConn))
             {
-                _basisRepository =new BasisRepository(AESHelper.AesDecrypt(dynamicConn));
+                _basisRepository = new BasisRepository(AESHelper.AesDecrypt(dynamicConn));
             }
             else
             {
@@ -41,16 +40,17 @@ namespace MESWebAPI.Controllers
             }
         }
         [HttpGet]
-        public string Get()
+        [HttpPost]
+        [Route("Repair")]
+        public async Task<ReturnInfo_MES<RepairUser>> RepairInfo(int productID, byte status, DateTime startTime, DateTime endTime)
         {
-            return "122";
-        }
+            ReturnInfo_MES<RepairUser> returnInfo = new ReturnInfo_MES<RepairUser>();
+            BUMasterRepository masterRepository = await GetRepository<BUMasterRepository>(productID);
+            IEnumerable<RepairUser> ieRepair = masterRepository.GetRepairUserInfo(productID, status, startTime, endTime);
+            List<RepairUser> lstRepairInfo = ieRepair.ToList();
 
-        [Route("Test1/{userID}")]
-        [HttpGet]
-        public string Get11(string userID)
-        {
-            return userID;
+            returnInfo.SetData(lstRepairInfo);
+            return returnInfo;
         }
     }
 }

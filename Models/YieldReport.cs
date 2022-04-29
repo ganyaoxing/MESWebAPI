@@ -3,7 +3,7 @@ namespace MESWebAPI.Models
 #nullable disable
     public class YieldReport
     {
-        public string ProcessNOLevel { get; set; }
+        public string ProcessLevel { get; set; }
         public string ProcessNO { get; set; }
         public string ModelID { get; set; }
         public string ConditionID { get; set; }
@@ -42,10 +42,24 @@ namespace MESWebAPI.Models
         public decimal VPY { get; set; }
         public int VPYCount { get; set; }
         public int VPYCount2 { get; set; }
-        public int WIP { get; set; }
         public int WIP1 { get; set; }
         public int WIP2 { get; set; }
+
+        private int _wip { get; set; }
+        public int WIP
+        {
+            get
+            {
+                return _wip == 0 ? WIP2 + WIP1 : _wip;
+            }
+            set
+            {
+                _wip = value;
+            }
+        }
         public int WIPCount { get; set; }
         public decimal YieldRate { get; set; }
+        public int PassCount { get; set; }
+        public decimal PassYieldRate { get; set; }
     }
 }

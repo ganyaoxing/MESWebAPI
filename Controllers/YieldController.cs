@@ -144,7 +144,9 @@ namespace MESWebAPI.Controllers
                     ychart.Cumulated = Math.Round(((double)cumulatedQty / totalQty) * 100, 2, MidpointRounding.AwayFromZero).ToString();
                     ychart.Actual = Math.Round((double.Parse(ychart.Qty.ToString()) / ychart.OutputCount) * 100, 2, MidpointRounding.AwayFromZero).ToString();
                 }
-                return new ReturnInfoLayUI<YieldReportDetailChart>(msg, lstYieldReportDetailChart);
+                List<YieldReportDetailChart> lstydc = lstYieldReportDetailChart.ToList();
+                lstydc.Add(new YieldReportDetailChart() { EngDesc = "TOTAL", Qty = lstYieldReportDetailChart.Sum(p => p.Qty) });
+                return new ReturnInfoLayUI<YieldReportDetailChart>(msg, lstydc);
             }
             catch (Exception ex)
             {
@@ -226,6 +228,7 @@ namespace MESWebAPI.Controllers
                 {
                     lstYieldReportDetailChart = _yieldRepository.GetYieldReworkDetailChartData(productID, viewerConfigID, startTime, endTime, lineID,
                             processNO, failCount, wipCount, conditionID, stationID, passCount, failType, mySqlConnection, ref msg);
+                    lstYieldReportDetailChart.Append(new YieldReportDetailChart() { EngDesc = "TOTAL", Qty = lstYieldReportDetailChart.Sum(p => p.Qty) });
                     _memoryCache.Set(key, lstYieldReportDetailChart, new TimeSpan(0, 0, 30));
                     _memoryCache.Set(keyMsg, msg, new TimeSpan(0, 0, 60));
                 }
@@ -238,7 +241,9 @@ namespace MESWebAPI.Controllers
                     ychart.Cumulated = Math.Round(((double)cumulatedQty / totalQty) * 100, 2, MidpointRounding.AwayFromZero).ToString();
                     ychart.Actual = Math.Round((double.Parse(ychart.Qty.ToString()) / ychart.OutputCount) * 100, 2, MidpointRounding.AwayFromZero).ToString();
                 }
-                return new ReturnInfoLayUI<YieldReportDetailChart>(msg, lstYieldReportDetailChart);
+                List<YieldReportDetailChart> lstydc = lstYieldReportDetailChart.ToList();
+                lstydc.Add(new YieldReportDetailChart() { EngDesc = "TOTAL", Qty = lstYieldReportDetailChart.Sum(p => p.Qty) });
+                return new ReturnInfoLayUI<YieldReportDetailChart>(msg, lstydc);
             }
             catch (Exception ex)
             {

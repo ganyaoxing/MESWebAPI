@@ -51,6 +51,7 @@ namespace MESWebAPI.Controllers
         }
 
         [HttpGet]
+        [HttpPost]
         [Route("Repair")]
         public async Task<ReturnInfo_MES<RepairUser>> RepairInfo(int productID, byte status, DateTime startTime, DateTime endTime)
         {
