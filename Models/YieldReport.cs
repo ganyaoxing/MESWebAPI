@@ -41,6 +41,7 @@ namespace MESWebAPI.Models
         public int ViewerConfigID { get; set; }
         public decimal VPY { get; set; }
         public int VPYCount { get; set; }
+        public int VPY2Count { get; set; }
         public int VPYCount2 { get; set; }
         public int WIP1 { get; set; }
         public int WIP2 { get; set; }

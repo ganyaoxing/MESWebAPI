@@ -89,27 +89,50 @@ namespace MESWebAPI.Controllers
         {
             try
             {
-                MySqlConnection mySqlConnection = GetMysqlConnection(productID);
-                //startTime = new DateTime(2021, 12, 8, 8, 0, 0);
-                //endTime = new DateTime(2021, 12, 8, 9, 0, 0);
-                IEnumerable<YieldReportDetail> lstYieldReportDetail;
-                string key = CacheKey.RepairYield + $"{productID}{startTime}{endTime}{viewerConfigID}{lineID}{reportType}{processNO}{reTestCount}{failCount}{wipCount}{conditionID}{stationID}{firstCount}";
-                string keyMsg = key + "Msg";
+                string allMsg = string.Empty;
                 string msg = string.Empty;
-                _memoryCache.TryGetValue(keyMsg, out msg);
-                if (!_memoryCache.TryGetValue(key, out lstYieldReportDetail))
+                IEnumerable<YieldReportDetail> ieyrd;
+                if (firstCount == 1 && reTestCount == 1 && failCount == 2)
                 {
-                    lstYieldReportDetail = _yieldRepository.GetYieldDetailData(productID, viewerConfigID, startTime, endTime, lineID, reportType, processNO,
-                    reTestCount, failCount, wipCount, conditionID, stationID, firstCount, mySqlConnection, ref msg);
-                    _memoryCache.Set(key, lstYieldReportDetail, new TimeSpan(0, 0, 30));
-                    _memoryCache.Set(keyMsg, msg, new TimeSpan(0, 0, 60));
+                    ieyrd = GetYieldReportDetailInfoIem(productID, startTime, endTime, viewerConfigID
+                                       , lineID, reportType, processNO, reTestCount, 0, wipCount, conditionID, stationID, firstCount, out msg);
+                    allMsg = msg;
+                    ieyrd.Union(GetYieldReportDetailInfoIem(productID, startTime, endTime, viewerConfigID
+                                                           , lineID, reportType, processNO, 0, failCount, wipCount, conditionID, stationID, 0, out msg));
+                    allMsg += "\r\n" + msg;
                 }
-                return new ReturnInfoLayUI<YieldReportDetail>(msg, lstYieldReportDetail);
+                else
+                    ieyrd = GetYieldReportDetailInfoIem(productID, startTime, endTime, viewerConfigID
+                   , lineID, reportType, processNO, reTestCount, failCount, wipCount, conditionID, stationID, firstCount, out allMsg);
+
+                return new ReturnInfoLayUI<YieldReportDetail>(allMsg, ieyrd);
             }
             catch (Exception ex)
             {
                 return new ReturnInfoLayUI<YieldReportDetail>(ex.ToString(), 1);
             }
+        }
+
+        private IEnumerable<YieldReportDetail> GetYieldReportDetailInfoIem(int productID, DateTime startTime, DateTime endTime, int viewerConfigID
+                , string lineID, string reportType, string processNO,
+                int reTestCount, int failCount, int wipCount, string conditionID, string stationID, int firstCount, out string msg)
+        {
+            MySqlConnection mySqlConnection = GetMysqlConnection(productID);
+            //startTime = new DateTime(2021, 12, 8, 8, 0, 0);
+            //endTime = new DateTime(2021, 12, 8, 9, 0, 0);
+            IEnumerable<YieldReportDetail> lstYieldReportDetail;
+            string key = CacheKey.RepairYield + $"{productID}{startTime}{endTime}{viewerConfigID}{lineID}{reportType}{processNO}{reTestCount}{failCount}{wipCount}{conditionID}{stationID}{firstCount}";
+            string keyMsg = key + "Msg";
+            msg = string.Empty;
+            _memoryCache.TryGetValue(keyMsg, out msg);
+            if (!_memoryCache.TryGetValue(key, out lstYieldReportDetail))
+            {
+                lstYieldReportDetail = _yieldRepository.GetYieldDetailData(productID, viewerConfigID, startTime, endTime, lineID, reportType, processNO,
+                reTestCount, failCount, wipCount, conditionID, stationID, firstCount, mySqlConnection, ref msg);
+                _memoryCache.Set(key, lstYieldReportDetail, new TimeSpan(0, 0, 30));
+                _memoryCache.Set(keyMsg, msg, new TimeSpan(0, 0, 60));
+            }
+            return lstYieldReportDetail;
         }
 
         [HttpGet]
